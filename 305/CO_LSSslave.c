@@ -230,6 +230,15 @@ CO_LSSslave_initCallbackPre(CO_LSSslave_t* LSSslave, void* object, void (*pFunct
 #endif
 
 void
+CO_LSSslave_initCkNodeIdCall(CO_LSSslave_t* LSSslave, void* object,
+                             bool_t (*pFunctLSScheckNodeId)(void* object, uint8_t nodeId)) {
+    if (LSSslave != NULL) {
+        LSSslave->functLSScheckNodeIdObject = object;
+        LSSslave->pFunctLSScheckNodeId = pFunctLSScheckNodeId;
+    }
+}
+
+void
 CO_LSSslave_initCkBitRateCall(CO_LSSslave_t* LSSslave, void* object,
                               bool_t (*pFunctLSScheckBitRate)(void* object, uint16_t bitRate)) {
     if (LSSslave != NULL) {
@@ -287,7 +296,9 @@ CO_LSSslave_process(CO_LSSslave_t* LSSslave) {
                 nid = LSSslave->CANdata[1];
                 errorCode = CO_LSS_CFG_NODE_ID_OK;
 
-                if (CO_LSS_NODE_ID_VALID(nid)) {
+                if (CO_LSS_NODE_ID_VALID(nid)
+                    && ((LSSslave->pFunctLSScheckNodeId == NULL)
+                        || LSSslave->pFunctLSScheckNodeId(LSSslave->functLSScheckNodeIdObject, nid))) {
                     *LSSslave->pendingNodeID = nid;
                 } else {
                     errorCode = CO_LSS_CFG_NODE_ID_OUT_OF_RANGE;

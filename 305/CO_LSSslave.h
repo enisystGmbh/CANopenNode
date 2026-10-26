@@ -91,6 +91,8 @@ typedef struct {
     void (*pFunctSignalPre)(void* object); /**< From CO_LSSslave_initCallbackPre() or NULL */
     void* functSignalObjectPre;            /**< Pointer to object */
 #endif
+    bool_t (*pFunctLSScheckNodeId)(void* object, uint8_t nodeId);
+    void* functLSScheckNodeIdObject;
     bool_t (*pFunctLSScheckBitRate)(void* object,
                                     uint16_t bitRate); /**< From CO_LSSslave_initCkBitRateCall() or NULL */
     void* functLSScheckBitRateObject;                  /** Pointer to object */
@@ -180,6 +182,22 @@ CO_LSSslave_getState(CO_LSSslave_t* LSSslave) {
  */
 void CO_LSSslave_initCallbackPre(CO_LSSslave_t* LSSslave, void* object, void (*pFunctSignalPre)(void* object));
 #endif
+
+/**
+ * Initialize verify node ID callback
+ *
+ * The optional callback checks device-specific restrictions for a node ID requested by "configure node ID".
+ * It is called only after the standard node ID range check succeeds. Return true to accept the node ID or false
+ * to reject it with CO_LSS_CFG_NODE_ID_OUT_OF_RANGE, leaving the pending node ID unchanged.
+ * Without a callback, all node IDs passing the standard range check are accepted.
+ * Register the callback again after each CO_LSSslave_init().
+ *
+ * @param LSSslave This object.
+ * @param object Pointer passed to pFunctLSScheckNodeId(). Can be NULL.
+ * @param pFunctLSScheckNodeId Pointer to the callback function. Not called if NULL.
+ */
+void CO_LSSslave_initCkNodeIdCall(CO_LSSslave_t* LSSslave, void* object,
+                                  bool_t (*pFunctLSScheckNodeId)(void* object, uint8_t nodeId));
 
 /**
  * Initialize verify bit rate callback
